@@ -305,10 +305,47 @@ def show_employee_management():
                 st.success("Employee deleted successfully!")
 
 
+def show_report():
+    st.title("Reports")
+    st.write("Generate and view reports here.")
+
+    # Example report: Total income vs. total expenses
+    st.subheader("Income vs Expenses")
+
+    # Query to fetch data
+    query = """
+        SELECT strftime('%Y-%m', RecordDate) as Month, 
+               SUM(Income) as TotalIncome, 
+               SUM(Expenses) as TotalExpenses
+        FROM FinancialRecord
+        GROUP BY Month
+        ORDER BY Month
+    """
+    data = fetch_data(query)
+    df = pd.DataFrame(data, columns=["Month", "TotalIncome", "TotalExpenses"])
+
+    # Create columns for layout
+    col1, col2 = st.columns(2)
+
+    # Table in the first column
+    with col1:
+        st.write(df)
+
+    # Line chart in the second column
+    with col2:
+        fig, ax = plt.subplots()
+        df.plot(x="Month", y=["TotalIncome", "TotalExpenses"], kind="line", ax=ax, marker='o')
+        plt.title("Monthly Income vs Expenses")
+        plt.xlabel("Month")
+        plt.ylabel("Amount")
+        st.pyplot(fig)
+
+
+
 def main():
     st.sidebar.title("Navigation")
     pages = ["Home", "Crop Planning", "Inventory Management", "Financial Records", "Harvest Tracking",
-             "Market Information", "Employee Management"]
+             "Market Information", "Employee Management", "Report"]
     selection = st.sidebar.radio("Go to", pages)
 
     if selection == "Home":
@@ -325,6 +362,8 @@ def main():
         show_market_info()
     elif selection == "Employee Management":
         show_employee_management()
+    elif selection == "Report":
+        show_report()
 
 
 if __name__ == "__main__":
