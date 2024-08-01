@@ -8,14 +8,9 @@ import matplotlib.pyplot as plt
 
 # Define connection function
 def get_connection():
-    # Database file path
     db_path = 'farm_management.db'
-
-    # Check if the database file exists
     if not os.path.exists(db_path):
-        # If not, create the database
         create_database()
-
     return sqlite3.connect(db_path)
 
 
@@ -59,21 +54,23 @@ def fetch_data(query, params=()):
     return data
 
 
+# Define pages
 def show_home():
-
     st.title("Welcome to FarmFlow Ghana")
-
     st.markdown("### Our Motto")
-    st.markdown(
-        """
-        **Empowering Farmers, Enhancing Yields, Ensuring Prosperity**
-        """
-    )
+    st.markdown("**Empowering Farmers, Enhancing Yields, Ensuring Prosperity**")
 
 
 def show_crop_planning():
     st.title("Crop Planning")
     st.write("Manage crop planning here.")
+    search_query = st.text_input("Search Crops")
+
+    with st.expander("View Crops"):
+        query = "SELECT * FROM Crop WHERE Name LIKE ?"
+        data = fetch_data(query, ('%' + search_query + '%',))
+        df = pd.DataFrame(data, columns=["CropID", "Name", "Type", "GrowthDuration"])
+        st.write(df)
 
     with st.expander("Add Crop"):
         with st.form("add_crop_form"):
@@ -102,16 +99,17 @@ def show_crop_planning():
                 delete_record("Crop", {"CropID": crop_id})
                 st.success("Crop deleted successfully!")
 
-    with st.expander("View Crops"):
-        query = "SELECT * FROM Crop"
-        data = fetch_data(query)
-        df = pd.DataFrame(data, columns=["CropID", "Name", "Type", "GrowthDuration"])
-        st.write(df)
-
 
 def show_inventory_management():
     st.title("Inventory Management")
     st.write("Track and manage inventory here.")
+    search_query = st.text_input("Search Inventory")
+
+    with st.expander("View Inventory"):
+        query = "SELECT * FROM Inventory WHERE ItemName LIKE ?"
+        data = fetch_data(query, ('%' + search_query + '%',))
+        df = pd.DataFrame(data, columns=["InventoryID", "ItemName", "Quantity", "Type", "PurchaseDate"])
+        st.write(df)
 
     with st.expander("Add Inventory Item"):
         with st.form("add_inventory_form"):
@@ -142,16 +140,17 @@ def show_inventory_management():
                 delete_record("Inventory", {"InventoryID": inventory_id})
                 st.success("Inventory item deleted successfully!")
 
-    with st.expander("View Inventory"):
-        query = "SELECT * FROM Inventory"
-        data = fetch_data(query)
-        df = pd.DataFrame(data, columns=["InventoryID", "ItemName", "Quantity", "Type", "PurchaseDate"])
-        st.write(df)
-
 
 def show_financial_records():
     st.title("Financial Records")
     st.write("Manage financial records here.")
+    search_query = st.text_input("Search Financial Records")
+
+    with st.expander("View Financial Records"):
+        query = "SELECT * FROM FinancialRecord WHERE RecordDate LIKE ?"
+        data = fetch_data(query, ('%' + search_query + '%',))
+        df = pd.DataFrame(data, columns=["RecordID", "RecordDate", "Income", "Expenses"])
+        st.write(df)
 
     with st.expander("Add Financial Record"):
         with st.form("add_financial_record_form"):
@@ -181,16 +180,17 @@ def show_financial_records():
                 delete_record("FinancialRecord", {"RecordID": record_id})
                 st.success("Financial record deleted successfully!")
 
-    with st.expander("View Financial Records"):
-        query = "SELECT * FROM FinancialRecord"
-        data = fetch_data(query)
-        df = pd.DataFrame(data, columns=["RecordID", "RecordDate", "Income", "Expenses"])
-        st.write(df)
-
 
 def show_harvest_tracking():
     st.title("Harvest Tracking")
     st.write("Track and compare harvest yields here.")
+    search_query = st.text_input("Search Harvest Records")
+
+    with st.expander("View Harvest Records"):
+        query = "SELECT * FROM Harvest WHERE CropID LIKE ?"
+        data = fetch_data(query, ('%' + search_query + '%',))
+        df = pd.DataFrame(data, columns=["HarvestID", "CropID", "PlotID", "HarvestDate", "Quantity"])
+        st.write(df)
 
     with st.expander("Add Harvest Record"):
         with st.form("add_harvest_form"):
@@ -211,7 +211,8 @@ def show_harvest_tracking():
             quantity = st.number_input("New Quantity", min_value=1)
             if st.form_submit_button("Update Harvest Record"):
                 update_record("Harvest", {"CropID": crop_id, "PlotID": plot_id, "HarvestDate": harvest_date.isoformat(),
-                                          "Quantity": quantity}, {"HarvestID": harvest_id})
+                                          "Quantity": quantity},
+                              {"HarvestID": harvest_id})
                 st.success("Harvest record updated successfully!")
 
     with st.expander("Delete Harvest Record"):
@@ -221,160 +222,109 @@ def show_harvest_tracking():
                 delete_record("Harvest", {"HarvestID": harvest_id})
                 st.success("Harvest record deleted successfully!")
 
-    with st.expander("View Harvest Records"):
-        query = "SELECT * FROM Harvest"
-        data = fetch_data(query)
-        df = pd.DataFrame(data, columns=["HarvestID", "CropID", "PlotID", "HarvestDate", "Quantity"])
-        st.write(df)
-
 
 def show_market_info():
     st.title("Market Information")
-    st.write("Get current market prices and insights here.")
+    st.write("Manage market data and pricing here.")
+    search_query = st.text_input("Search Market Information")
 
-    with st.expander("Add Market Info"):
+    with st.expander("View Market Information"):
+        query = "SELECT * FROM MarketInfo WHERE CropID LIKE ?"
+        data = fetch_data(query, ('%' + search_query + '%',))
+        df = pd.DataFrame(data, columns=["MarketInfoID", "CropID", "MarketDate", "PricePerUnit"])
+        st.write(df)
+
+    with st.expander("Add Market Information"):
         with st.form("add_market_info_form"):
             crop_id = st.number_input("Crop ID", min_value=1)
             market_date = st.date_input("Market Date")
             price_per_unit = st.number_input("Price Per Unit", min_value=0.0)
-            if st.form_submit_button("Add Market Info"):
+            if st.form_submit_button("Add Market Information"):
                 add_record("MarketInfo", (crop_id, market_date.isoformat(), price_per_unit))
-                st.success("Market info added successfully!")
+                st.success("Market information added successfully!")
 
-    with st.expander("Update Market Info"):
+    with st.expander("Update Market Information"):
         with st.form("update_market_info_form"):
-            market_info_id = st.number_input("Market Info ID to update", min_value=1)
+            market_info_id = st.number_input("MarketInfo ID to update", min_value=1)
             crop_id = st.number_input("New Crop ID", min_value=1)
             market_date = st.date_input("New Market Date")
             price_per_unit = st.number_input("New Price Per Unit", min_value=0.0)
-            if st.form_submit_button("Update Market Info"):
-                update_record("MarketInfo",
-                              {"CropID": crop_id, "MarketDate": market_date.isoformat(),
-                               "PricePerUnit": price_per_unit},
+            if st.form_submit_button("Update Market Information"):
+                update_record("MarketInfo", {"CropID": crop_id, "MarketDate": market_date.isoformat(),
+                                             "PricePerUnit": price_per_unit},
                               {"MarketInfoID": market_info_id})
-                st.success("Market info updated successfully!")
+                st.success("Market information updated successfully!")
 
-    with st.expander("Delete Market Info"):
+    with st.expander("Delete Market Information"):
         with st.form("delete_market_info_form"):
-            market_info_id = st.number_input("Market Info ID to delete", min_value=1)
-            if st.form_submit_button("Delete Market Info"):
+            market_info_id = st.number_input("MarketInfo ID to delete", min_value=1)
+            if st.form_submit_button("Delete Market Information"):
                 delete_record("MarketInfo", {"MarketInfoID": market_info_id})
-                st.success("Market info deleted successfully!")
+                st.success("Market information deleted successfully!")
 
-    with st.expander("View Market Info"):
-        query = "SELECT * FROM MarketInfo"
-        data = fetch_data(query)
-        df = pd.DataFrame(data, columns=["MarketInfoID", "CropID", "MarketDate", "PricePerUnit"])
+
+def show_employee_management():
+    st.title("Employee Management")
+    st.write("Manage employees and their details here.")
+    search_query = st.text_input("Search Employees")
+
+    with st.expander("View Employees"):
+        query = "SELECT * FROM Employee WHERE FirstName LIKE ? OR LastName LIKE ?"
+        data = fetch_data(query, ('%' + search_query + '%', '%' + search_query + '%'))
+        df = pd.DataFrame(data, columns=["EmployeeID", "FirstName", "LastName", "Role", "HireDate"])
         st.write(df)
 
+    with st.expander("Add Employee"):
+        with st.form("add_employee_form"):
+            first_name = st.text_input("First Name")
+            last_name = st.text_input("Last Name")
+            role = st.text_input("Role")
+            hire_date = st.date_input("Hire Date")
+            if st.form_submit_button("Add Employee"):
+                add_record("Employee", (first_name, last_name, role, hire_date.isoformat()))
+                st.success("Employee added successfully!")
 
-def generate_financial_report():
-    st.title("Financial Report")
+    with st.expander("Update Employee"):
+        with st.form("update_employee_form"):
+            employee_id = st.number_input("Employee ID to update", min_value=1)
+            first_name = st.text_input("New First Name")
+            last_name = st.text_input("New Last Name")
+            role = st.text_input("New Role")
+            hire_date = st.date_input("New Hire Date")
+            if st.form_submit_button("Update Employee"):
+                update_record("Employee", {"FirstName": first_name, "LastName": last_name, "Role": role,
+                                           "HireDate": hire_date.isoformat()},
+                              {"EmployeeID": employee_id})
+                st.success("Employee updated successfully!")
 
-    # Define query to fetch financial records
-    query = """
-    SELECT RecordDate, SUM(Income) as TotalIncome, SUM(Expenses) as TotalExpenses
-    FROM FinancialRecord
-    GROUP BY RecordDate
-    """
-
-    data = fetch_data(query)
-    df = pd.DataFrame(data, columns=["RecordDate", "TotalIncome", "TotalExpenses"])
-
-    # Create two columns for the table and chart
-    col1, col2 = st.columns([1, 2])
-
-    with col1:
-        st.write("### Financial Data")
-        st.write(df)
-
-    with col2:
-        st.write("### Income and Expenses Over Time")
-        # Plotting the data as a line chart
-        fig, ax = plt.subplots()
-        df.set_index('RecordDate', inplace=True)
-        df.plot(y=["TotalIncome", "TotalExpenses"], kind="line", marker='o', ax=ax)
-        ax.set_title("Income and Expenses Over Time")
-        ax.set_xlabel("Date")
-        ax.set_ylabel("Amount")
-        ax.grid(True)
-        st.pyplot(fig)
+    with st.expander("Delete Employee"):
+        with st.form("delete_employee_form"):
+            employee_id = st.number_input("Employee ID to delete", min_value=1)
+            if st.form_submit_button("Delete Employee"):
+                delete_record("Employee", {"EmployeeID": employee_id})
+                st.success("Employee deleted successfully!")
 
 
-# Set the page layout to wide
-st.set_page_config(
-    layout="wide",
-)
-
-# Inject custom CSS to set a medium-wide width
-st.markdown(
-    """
-    <style>
-    /* Adjust the width of the main content area */
-    .main .block-container {
-        max-width: 1200px; /* Set your desired width here */
-        padding: 1rem; /* Optional: Adjust padding */
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-
-# Main function
 def main():
-    st.title("Farm Management System")
+    st.sidebar.title("Navigation")
+    pages = ["Home", "Crop Planning", "Inventory Management", "Financial Records", "Harvest Tracking",
+             "Market Information", "Employee Management"]
+    selection = st.sidebar.radio("Go to", pages)
 
-    # Navigation buttons
-    col1, col2, col3, col4, col5, col6, col7 = st.columns([1, 1, 2, 2, 2, 2, 1])
-
-    with col1:
-        if st.button("Home"):
-            st.session_state['page'] = 'Home'
-
-    with col2:
-        if st.button("Crop Planning"):
-            st.session_state['page'] = 'Crop Planning'
-
-    with col3:
-        if st.button("Inventory Management"):
-            st.session_state['page'] = 'Inventory Management'
-
-    with col4:
-        if st.button("Financial Records"):
-            st.session_state['page'] = 'Financial Records'
-
-    with col5:
-        if st.button("Harvest Tracking"):
-            st.session_state['page'] = 'Harvest Tracking'
-
-    with col6:
-        if st.button("Market Information"):
-            st.session_state['page'] = 'Market Information'
-
-    with col7:
-        if st.button("Reporting"):
-            st.session_state['page'] = 'Reporting'
-
-    # Default page
-    if 'page' not in st.session_state:
-        st.session_state['page'] = 'Home'
-
-    # Display content based on button click
-    if st.session_state['page'] == 'Home':
+    if selection == "Home":
         show_home()
-    elif st.session_state['page'] == 'Crop Planning':
+    elif selection == "Crop Planning":
         show_crop_planning()
-    elif st.session_state['page'] == 'Inventory Management':
+    elif selection == "Inventory Management":
         show_inventory_management()
-    elif st.session_state['page'] == 'Financial Records':
+    elif selection == "Financial Records":
         show_financial_records()
-    elif st.session_state['page'] == 'Harvest Tracking':
+    elif selection == "Harvest Tracking":
         show_harvest_tracking()
-    elif st.session_state['page'] == 'Market Information':
+    elif selection == "Market Information":
         show_market_info()
-    elif st.session_state['page'] == 'Reporting':
-        generate_financial_report()
+    elif selection == "Employee Management":
+        show_employee_management()
 
 
 if __name__ == "__main__":

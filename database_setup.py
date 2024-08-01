@@ -1,6 +1,4 @@
-# database_setup.py
 import sqlite3
-
 
 def create_database():
     conn = sqlite3.connect('farm_management.db')
@@ -27,9 +25,10 @@ def create_database():
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS Employee (
         EmployeeID INTEGER PRIMARY KEY AUTOINCREMENT,
-        Name TEXT NOT NULL,
-        Role TEXT NOT NULL,
-        HireDate TEXT NOT NULL
+        FirstName TEXT NOT NULL,
+        LastName TEXT NOT NULL,
+        Role TEXT,
+        HireDate DATE NOT NULL
     )
     ''')
 
@@ -39,14 +38,14 @@ def create_database():
         ItemName TEXT NOT NULL,
         Quantity INTEGER NOT NULL,
         Type TEXT NOT NULL,
-        PurchaseDate TEXT NOT NULL
+        PurchaseDate DATE NOT NULL
     )
     ''')
 
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS FinancialRecord (
         RecordID INTEGER PRIMARY KEY AUTOINCREMENT,
-        RecordDate TEXT NOT NULL,
+        RecordDate DATE NOT NULL,
         Income REAL NOT NULL,
         Expenses REAL NOT NULL
     )
@@ -57,7 +56,7 @@ def create_database():
         PlantingID INTEGER PRIMARY KEY AUTOINCREMENT,
         CropID INTEGER NOT NULL,
         PlotID INTEGER NOT NULL,
-        PlantingDate TEXT NOT NULL,
+        PlantingDate DATE NOT NULL,
         Quantity INTEGER NOT NULL,
         FOREIGN KEY (CropID) REFERENCES Crop(CropID),
         FOREIGN KEY (PlotID) REFERENCES Plot(PlotID)
@@ -69,7 +68,7 @@ def create_database():
         HarvestID INTEGER PRIMARY KEY AUTOINCREMENT,
         CropID INTEGER NOT NULL,
         PlotID INTEGER NOT NULL,
-        HarvestDate TEXT NOT NULL,
+        HarvestDate DATE NOT NULL,
         Quantity INTEGER NOT NULL,
         FOREIGN KEY (CropID) REFERENCES Crop(CropID),
         FOREIGN KEY (PlotID) REFERENCES Plot(PlotID)
@@ -82,7 +81,7 @@ def create_database():
         EmployeeID INTEGER NOT NULL,
         PlotID INTEGER NOT NULL,
         TaskDescription TEXT NOT NULL,
-        TaskDate TEXT NOT NULL,
+        TaskDate DATE NOT NULL,
         FOREIGN KEY (EmployeeID) REFERENCES Employee(EmployeeID),
         FOREIGN KEY (PlotID) REFERENCES Plot(PlotID)
     )
@@ -92,7 +91,7 @@ def create_database():
     CREATE TABLE IF NOT EXISTS InventoryUsage (
         UsageID INTEGER PRIMARY KEY AUTOINCREMENT,
         InventoryID INTEGER NOT NULL,
-        UsageDate TEXT NOT NULL,
+        UsageDate DATE NOT NULL,
         QuantityUsed INTEGER NOT NULL,
         FOREIGN KEY (InventoryID) REFERENCES Inventory(InventoryID)
     )
@@ -103,7 +102,7 @@ def create_database():
         ControlID INTEGER PRIMARY KEY AUTOINCREMENT,
         PlotID INTEGER NOT NULL,
         ControlMethod TEXT NOT NULL,
-        ControlDate TEXT NOT NULL,
+        ControlDate DATE NOT NULL,
         Quantity REAL NOT NULL,
         FOREIGN KEY (PlotID) REFERENCES Plot(PlotID)
     )
@@ -125,7 +124,7 @@ def create_database():
     CREATE TABLE IF NOT EXISTS MarketInfo (
         MarketInfoID INTEGER PRIMARY KEY AUTOINCREMENT,
         CropID INTEGER NOT NULL,
-        MarketDate TEXT NOT NULL,
+        MarketDate DATE NOT NULL,
         PricePerUnit REAL NOT NULL,
         FOREIGN KEY (CropID) REFERENCES Crop(CropID)
     )
@@ -136,7 +135,6 @@ def create_database():
 
     conn.commit()
     conn.close()
-
 
 def insert_data(cursor):
     # Insert data into Crop table
@@ -165,14 +163,14 @@ def insert_data(cursor):
 
     # Insert data into Employee table
     cursor.executemany('''
-    INSERT INTO Employee (Name, Role, HireDate) VALUES (?, ?, ?)
+    INSERT INTO Employee (FirstName, LastName, Role, HireDate) VALUES (?, ?, ?, ?)
     ''', [
-        ('Kofi Mensah', 'Farmer', '2021-03-15'),
-        ('Ama Asante', 'Supervisor', '2020-11-01'),
-        ('Yaw Boateng', 'Technician', '2019-08-25'),
-        ('Afia Opoku', 'Field Worker', '2022-06-10'),
-        ('Kwame Nkrumah', 'Manager', '2018-01-20'),
-        ('Joe Puppy', 'Farmer', '2024-05-20')
+        ('Kofi', 'Mensah', 'Farmer', '2021-03-15'),
+        ('Ama', 'Asante', 'Supervisor', '2020-11-01'),
+        ('Yaw', 'Boateng', 'Technician', '2019-08-25'),
+        ('Afia', 'Opoku', 'Field Worker', '2022-06-10'),
+        ('Kwame', 'Nkrumah', 'Manager', '2018-01-20'),
+        ('Joe', 'Puppy', 'Farmer', '2024-05-20')
     ])
 
     # Insert data into Inventory table
